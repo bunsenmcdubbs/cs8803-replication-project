@@ -16,12 +16,35 @@ by Choi, Eunsol and Rashkin, Hannah and Zettlemoyer, Luke and Choi, Yejin](https
 }
 ```
 
-## Tools and Datasets
- - Stanford CoreNLP
- - Scipy
- - CPLEX4 (Community edition)
- - MPQA
- - Data from authors (publically available and privately shared)
+## Setup
+
+### Tools and Datasets
+- Python 3
+  - virtualenv
+  - Jupyter Notebook
+- Stanford CoreNLP
+- Scipy
+- CPLEX4 (Community edition)
+- MPQA
+- Data from authors (publically available and privately shared)
+
+### Install and Configure
+
+(Optional) Set up a virtual environment
+```
+$ virtualenv -p python3 venv
+$ source venv/bin/activate
+```
+
+Install (Python) dependencies
+```
+$ pip install -r requirements.txt
+```
+
+Start Jupyter notebook
+```
+$ jupyter notebook
+```
 
 ## "A Document-level Sentiment Model" (Section 2)
 The paper introduces a:
