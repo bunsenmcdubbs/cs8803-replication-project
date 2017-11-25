@@ -1,4 +1,7 @@
 venv
+
 *.pyc
+.ipynb_checkpoints
+
 data/*
 !data/README.md
