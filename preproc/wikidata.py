@@ -48,7 +48,7 @@ def get(entity_id):
 
 def get_id(term):
     try:
-        return get(search(term)['id'])
+        return search(term)['id']
     except (KeyError, TypeError):
         pass
     return None
