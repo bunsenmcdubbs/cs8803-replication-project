@@ -1,3 +1,7 @@
+import json
+
+from pycorenlp import StanfordCoreNLP
+
 def get_text(tokens):
     raw_text = []
     for token in tokens:
@@ -26,3 +30,20 @@ chains_from_parsed = lambda chains: [
         } for m in chain
     ] for chain in chains
 ]
+
+def load_from_parsed(f):
+    parsed_data = json.load(f)
+    sentences = sentences_from_parsed(parsed_data['text'])
+    corefs = chains_from_parsed(parsed_data['cluster_json'])
+    return parsed_data, sentences, corefs
+
+def load_from_text(f):
+    raw_text = f.read()
+    nlp = StanfordCoreNLP('http://localhost:9000')
+    output = nlp.annotate(raw_text, properties={
+        'annotators': 'ner,coref',
+        'outputFormat': 'json'
+    })
+    sentences = output['sentences']
+    corefs = output['corefs'].values()
+    return output, sentences, corefs
