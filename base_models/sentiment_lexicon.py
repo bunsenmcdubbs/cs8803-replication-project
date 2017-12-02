@@ -40,13 +40,21 @@ class SentimentLexicon:
         return None
 
     def get_sentiment_label(self, tokens):
-        sentiment = Counter()
+        s_count = Counter()
+        no_match = 0
         for token in tokens:
             pos = _ptb2ezpos(token['pos'])
             token_sentiment = self.get_sentiment(token['originalText'], pos) or \
                               self.get_sentiment(token['lemma'], pos) if 'lemma' in token else None
-            sentiment[token_sentiment] += 1
-        return sentiment.most_common()[0][0] if len(sentiment) > 0 else None, sentiment
+            if token_sentiment is not None:
+                s_count[token_sentiment] += 1
+            else:
+                no_match += 1
+
+        sentiment = s_count.most_common()[0][0] if len(s_count) > 0 else None
+        if no_match > 0:
+            s_count[None] = no_match
+        return sentiment, s_count
 
     @staticmethod
     def from_mpqa_file(filename):
