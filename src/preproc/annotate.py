@@ -3,8 +3,8 @@ import argparse
 import json
 import sys
 
-from entity_extractor import EntityExtractor, merge_people_by_last_name
-import util
+from .entity_extractor import EntityExtractor, merge_people_by_last_name
+from . import util
 
 def mark_entities(sentences, ee):
     for eid, occurances in ee.occurances.items():

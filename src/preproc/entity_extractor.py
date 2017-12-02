@@ -1,7 +1,6 @@
 from collections import Counter
 
-import util
-import wikidata
+from . import util, wikidata
 
 PERSON_TYPE = 'PERSON'
 LOCATION_TYPE = 'LOCATION'
