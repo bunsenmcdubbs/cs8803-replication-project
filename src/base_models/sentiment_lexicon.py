@@ -13,9 +13,10 @@ class POS(Enum):
 class Sentiment(Enum):
     POSITIVE = 'positive'
     NEGATIVE = 'negative'
+    NEUTRAL = 'neutral'
 
     def is_valid(text):
-        return text in set([s.value for s in Sentiment.__members__.values()])
+        return text in set([Sentiment.POSITIVE.value, Sentiment.NEGATIVE.value])
 
 class SentimentLexicon:
     def __init__(self):
@@ -51,9 +52,17 @@ class SentimentLexicon:
             else:
                 no_match += 1
 
-        sentiment = s_count.most_common()[0][0] if len(s_count) > 0 else None
+        sentiment = None
+        if len(s_count) == 1:
+            sentiment = s_count.most_common()[0][0]
+        elif len(s_count) > 1:
+            top2 = s_count.most_common(2)
+            if top2[0][1] == top2[1][1]:
+                sentiment = Sentiment.NEUTRAL
+
         if no_match > 0:
             s_count[None] = no_match
+
         return sentiment, s_count
 
     @staticmethod

@@ -1,6 +1,7 @@
-from collections import Counter
+from collections import Counter, defaultdict
 
-from . import util, wikidata
+from .. import util
+from . import wikidata
 
 PERSON_TYPE = 'PERSON'
 LOCATION_TYPE = 'LOCATION'
@@ -13,6 +14,7 @@ class EntityExtractor:
     def __init__(self):
         self._entity_to_id = {} # many entity to one id
         self._occurances = {} # one id to many occurances
+        self._occur_count = Counter()
         self._next_id = 0
 
     @property
@@ -22,6 +24,9 @@ class EntityExtractor:
     @property
     def occurances(self):
         return self._occurances
+
+    def most_common(self, N=1):
+        return self._occur_count.most_common(N)
 
     def create_entity(self, entity):
         assert entity not in self._entity_to_id
@@ -44,10 +49,14 @@ class EntityExtractor:
     def add_occurances(self, entity, occurs_iter):
         if entity not in self._entity_to_id:
             self.create_entity(entity)
-        self._occurances[self._entity_to_id[entity]].update(set(occurs_iter))
+        eid = self._entity_to_id[entity]
+        occurs = set(occurs_iter)
+        self._occurances[eid].update(occurs)
+        self._occur_count[eid] += len(occurs)
 
     def merge_entities(self, eid_dest, eid_additional):
         self._occurances[eid_dest] |= self._occurances[eid_additional]
+        self._occur_count = len(self._occurances[eid_dest])
 
         keys_to_change = [entity_key for entity_key, eid in self.ids if eid == eid_additional]
         for key in keys_to_change:
@@ -106,3 +115,10 @@ def merge_people_by_last_name(ee):
 
     for eid_dest, eid_additional in merges:
         ee.merge_entities(eid_dest, eid_additional)
+
+def occurs_by_sentence(ee):
+    mapping = defaultdict(set)
+    for eid, occurs in ee.occurances.items():
+        for occur in occurs:
+            mapping[occur[0]].add((occur, eid))
+    return mapping
