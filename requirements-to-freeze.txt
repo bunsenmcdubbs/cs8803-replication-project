@@ -2,3 +2,7 @@ jupyter
 scipy
 pycorenlp
 requests
+<<<<<<< HEAD
+=======
+pygtrie
+>>>>>>> fb29c70429f2332a4303bec8fbaa7c8dbfca5175
