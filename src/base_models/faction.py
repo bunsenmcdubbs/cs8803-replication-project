@@ -17,9 +17,6 @@ def get_factions(sentences, ee):
             dep_path = find_dep_path(sentence['tokens'], s_idx, d_idx)
             deps = [dep_type for (_, dep_type), _ in dep_path][1:]
 
-            if len(deps) < 3:
-                print(deps)
-
             if (
                     (len(deps) == 1 and deps[0] in ['nmod', 'nmod:poss', 'amod', 'nn', 'compound']) or
                     (len(deps) < 3 and ('poss' in deps or 'appos' in deps))

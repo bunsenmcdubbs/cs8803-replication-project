@@ -1,10 +1,4 @@
-#!/usr/bin/env python
-import argparse
-import json
-import sys
-
 from .entity_extractor import EntityExtractor, merge_people_by_last_name
-from .. import util
 
 def mark_entities(sentences, ee):
     for eid, occurances in ee.occurances.items():
@@ -36,25 +30,3 @@ def annotate(sentences, coref_chains, named_entities=None):
     merge_people_by_last_name(ee)
     mark_entities(sentences, ee)
     mark_coref_mentions(sentences, coref_chains)
-
-if __name__=='__main__':
-    argparser = argparse.ArgumentParser(description='Identify, locate, and extract entities')
-    argparser.add_argument('infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
-    argparser.add_argument('outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
-    argparser.add_argument('--parsed', action='store_true')
-
-    args = argparser.parse_args()
-
-    with args.infile as infile:
-        if args.parsed:
-            parsed, sentences, coref_chains = util.load_from_parsed(infile)
-        else:
-            parsed, sentences, coref_chains = util.load_from_text(infile)
-
-    if args.parsed:
-        annotate(sentences, coref_chains, parsed['named_entity'])
-    else:
-        annotate(sentences, coref_chains)
-
-    parsed['sentences'] = sentences
-    json.dump(parsed, args.outfile)
