@@ -58,10 +58,11 @@ class EntityExtractor:
         self._occurances[eid_dest] |= self._occurances[eid_additional]
         self._occur_count = len(self._occurances[eid_dest])
 
-        keys_to_change = [entity_key for entity_key, eid in self.ids if eid == eid_additional]
+        keys_to_change = set(entity_key for entity_key, eid in self.ids if eid == eid_additional)
         for key in keys_to_change:
             self._entity_to_id[key] = eid_dest
-            del self.occurances[eid_additional]
+            if eid_additional in self.occurances:
+                del self.occurances[eid_additional]
 
     @staticmethod
     def from_sentences(sentences):

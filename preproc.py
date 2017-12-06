@@ -20,9 +20,9 @@ def preprocess(infile, outfile, is_parsed=False):
     else:
         annotate(sentences, coref_chains)
 
-    parsed['sentences'] = sentences
+    # parsed['sentences'] = sentences
 
-    json.dump(parsed, args.outfile)
+    json.dump({'sentences': sentences}, outfile)
 
 if __name__=='__main__':
     argparser = argparse.ArgumentParser(description='Identify, locate, and extract entities')
