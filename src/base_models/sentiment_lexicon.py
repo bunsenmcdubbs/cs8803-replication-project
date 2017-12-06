@@ -18,6 +18,12 @@ class Sentiment(Enum):
     def is_valid(text):
         return text in set([Sentiment.POSITIVE.value, Sentiment.NEGATIVE.value])
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
 class SentimentLexicon:
     def __init__(self):
         self.trie = pygtrie.CharTrie()

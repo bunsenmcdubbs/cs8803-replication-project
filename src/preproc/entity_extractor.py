@@ -1,4 +1,5 @@
 from collections import Counter, defaultdict
+import random
 
 from .. import util
 from . import wikidata
@@ -15,7 +16,7 @@ class EntityExtractor:
         self._entity_to_id = {} # many entity to one id
         self._occurances = {} # one id to many occurances
         self._occur_count = Counter()
-        self._next_id = 0
+        self._next_id = random.randint(0, 10000)
 
     @property
     def ids(self):
@@ -28,16 +29,18 @@ class EntityExtractor:
     def most_common(self, N=1):
         return self._occur_count.most_common(N)
 
-    def create_entity(self, entity):
-        assert entity not in self._entity_to_id
+    def create_entity(self, entity, entity_id=None, dangermode=False):
+        if dangermode is not True:
+            assert entity not in self._entity_to_id, '"{}" already present in entity to id mapping'.format(str(entity))
         _, text = entity
 
-        wikidata_id = wikidata.get_id(text)
-        if wikidata_id:
-            entity_id = ('wikidata', wikidata_id)
-        else:
-            entity_id = ('manual', self._next_id)
-            self._next_id += 1
+        if entity_id is None:
+            wikidata_id = wikidata.get_id(text)
+            if wikidata_id:
+                entity_id = ('wikidata', wikidata_id)
+            else:
+                entity_id = ('manual', self._next_id)
+                self._next_id = random.randint(0, 10000)
         self._entity_to_id[entity] = entity_id
 
         if entity_id not in self._occurances:
@@ -63,6 +66,28 @@ class EntityExtractor:
             self._entity_to_id[key] = eid_dest
             if eid_additional in self.occurances:
                 del self.occurances[eid_additional]
+
+    @staticmethod
+    def from_sentences_with_entity_ids(sentences):
+        ee = EntityExtractor()
+        for sentence in sentences:
+            start_idx = curr_eid = None
+            for token in sentence['tokens']:
+                if tuple(token.get('entity_id', ())) != curr_eid and curr_eid is not None:
+                    end_idx = token['index'] - 1
+                    raw_text = util.get_text(sentence['tokens'][start_idx:end_idx])
+                    if curr_eid not in ee._occurances or raw_text not in ee._entity_to_id:
+                        ee.create_entity(('BLANK', raw_text), curr_eid, dangermode=True)
+                    ee.add_occurance(('BLANK', raw_text), sentence['index'], start_idx, end_idx)
+                    start_idx = curr_eid = None
+                if 'entity_id' in token and curr_eid is None:
+                    start_idx = token['index'] - 1
+                    curr_eid = tuple(token['entity_id'])
+            if curr_eid is not None:
+                end_idx = token['index']
+                raw_text = util.get_text(sentence['tokens'][start_idx:end_idx])
+                ee.add_occurance(('BLANK', raw_text), sentence['index'], start_idx, end_idx)
+        return ee
 
     @staticmethod
     def from_sentences(sentences):

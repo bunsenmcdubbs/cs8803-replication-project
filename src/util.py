@@ -4,11 +4,11 @@ import json
 
 from pycorenlp import StanfordCoreNLP
 
-def get_text(tokens):
+def get_text(tokens, after=None):
     raw_text = []
     for token in tokens:
         raw_text.append(token['originalText'])
-        raw_text.append(token['after'])
+        raw_text.append(after or token.get('after', ' '))
     return ''.join(raw_text[:-1])
 
 sentences_from_parsed = lambda sentences: [
@@ -55,15 +55,17 @@ def write_deps_to_tokens(sentences):
         for dep in sentence['enhancedPlusPlusDependencies']:
             gov_idx = dep['governor'] - 1
             dep_idx = dep['dependent'] - 1
-            dep_type = dep['dep']
-            if dep_type == 'ROOT':
+            dep_type = dep['dep'].lower()
+            if dep_type == 'root':
                 sentence['dep_root'] = dep['dependent']
             else:
                 gov = sentence['tokens'][gov_idx]
                 if 'dependents' not in gov:
                     gov['dependents'] = set()
                 gov['dependents'].add((dep_idx, dep_type))
-            sentence['tokens'][dep_idx]['governor'] = (gov_idx, dep_type)
+            if 'governor' not in sentence['tokens'][dep_idx]:
+                sentence['tokens'][dep_idx]['governor'] = set()
+            sentence['tokens'][dep_idx]['governor'].add((gov_idx, dep_type))
 
 class DepDirection(Enum):
     GOV = enum_auto()
@@ -76,9 +78,9 @@ def find_dep_path(tokens, source_idx, dest_idx):
     curr, path = q.pop(0)
     while curr != dest_idx:
         visited.add(curr)
-        gov, gov_type = tokens[curr]['governor']
-        if gov_type != 'ROOT' and gov not in visited:
-            q.append((gov, path + [((DepDirection.GOV, gov_type), gov)]))
+        for gov, gov_type in tokens[curr]['governor']:
+            if gov_type != 'root' and gov not in visited:
+                q.append((gov, path + [((DepDirection.GOV, gov_type), gov)]))
         for dep, dep_type in tokens[curr]['dependents'] if 'dependents' in tokens[curr] else []:
             if dep not in visited:
                 q.append((dep, path + [((DepDirection.DEP, dep_type), dep)]))

@@ -64,6 +64,24 @@ def dependency_features(sl, sentences, ee):
             if s_idx == d_idx or s_eid == d_eid:
                 continue
             dep_path = find_dep_path(sentence['tokens'], s_idx, d_idx)
+            # TODO bug?
+            # if dep_path is None:
+            #     print(len(sentence['tokens']), sent_idx, sentence['tokens'][s_idx], sentence['tokens'][d_idx])
+            # assert dep_path is not None, 'dependency path was not found!'
+            if dep_path is None:
+                dep_path = find_dep_path(sentence['tokens'], d_idx, s_idx)
+                if dep_path is not None:
+                    dep_path = [
+                        (
+                            (
+                                DepDirection.DEP if dep_dir == DepDirection.GOV else DepDirection.GOV,
+                                dep_type
+                            ),
+                            dep_idx
+                        ) for (dep_dir, dep_type), dep_idx in dep_path
+                    ]
+            if dep_path is None:
+                continue
             features[s_eid, d_eid].extend(dep_path_features(sl, sentence['tokens'], dep_path))
     return features
 

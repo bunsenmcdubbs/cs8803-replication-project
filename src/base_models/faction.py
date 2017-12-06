@@ -14,7 +14,11 @@ def get_factions(sentences, ee):
                 continue
             if (s_eid, d_eid) in factions:
                 continue
-            dep_path = find_dep_path(sentence['tokens'], s_idx, d_idx)
+
+            dep_path = find_dep_path(sentence['tokens'], s_idx, d_idx) or find_dep_path(sentence['tokens'], s_idx, d_idx)
+            if dep_path is None:
+                continue
+
             deps = [dep_type for (_, dep_type), _ in dep_path][1:]
 
             if (
